@@ -1,0 +1,51 @@
+# .github/workflows/playwright_tests.yml
+
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install pytest playwright
+
+      # Step 4: Install Playwright browsers
+      - name: Install Playwright browsers
+        run: |
+          source venv/bin/activate
+          playwright install
+
+      # Step 5: Run tests
+      - name: Run Playwright tests
+        run: |
+          source venv/bin/activate
+          pytest tests/ --html=reports/report.html --self-contained-html
+
+      # Step 6: Upload test report (optional)
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: playwright-report
+          path: reports/report.html
