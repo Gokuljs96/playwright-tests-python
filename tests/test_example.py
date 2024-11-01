@@ -1,21 +1,16 @@
-# tests/test_example.py
-
+import pytest
+import os
 from playwright.sync_api import sync_playwright
-from pages.home_page import HomePage
 
+@pytest.fixture(scope="function")
+def browser_name():
+    return os.getenv("BROWSER_NAME", "chromium")  # Default to Chromium if not set
 
-def test_example():
+def test_example(browser_name):
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = getattr(p, browser_name).launch(headless=True)
         page = browser.new_page()
-
-        # Navigate to the website
         page.goto("https://example.com")
-        home_page = HomePage(page)
-
-        # Check the header text
-        header_text = home_page.get_header_text()
-        print("Header text:", header_text)
-        assert header_text == "Example Domain"
-
+        title = page.title()
+        assert title == "Example Domain"
         browser.close()
